@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>جستجوگر با تصویر</title>
+    <link rel="stylesheet" href="assets/font.css" />
+    <style>
+      body {
+        font-family: "Vazirmatn", sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        direction: rtl;
+      }
+      .container {
+        max-width: 600px;
+        width: 100%;
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
+      h1 {
+        color: #333;
+        margin-bottom: 20px;
+      }
+      .upload-area {
+        border: 2px dashed #87fd81;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+      }
+      .upload-area p {
+        margin: 10px 0;
+        color: #666;
+      }
+      .btn {
+        background-color: #8ed557;
+        color: #fff;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+      }
+      .btn:hover {
+        background-color: #7fc945;
+      }
+      .supported-formats {
+        color: #666;
+        font-size: 0.9em;
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>جستجوگر با تصویر</h1>
+      <p>به جای نوشتن، عکس آپلود کن</p>
+      <div class="upload-area">
+        <input
+          type="file"
+          id="imageInput"
+          accept="image/jpeg,image/png,image/gif,image/webp"
+          style="display: none"
+        />
+        <button
+          class="btn"
+          onclick="document.getElementById('imageInput').click()"
+        >
+          بارگذاری تصویر
+        </button>
+        <p>یا</p>
+        <p>تصویر را درون این کادر بینداز</p>
+      </div>
+      <p class="supported-formats">
+        فرمت‌های پشتیبانی شده: JPG، PNG، GIF، WEBP
+      </p>
+    </div>
+
+    <script>
+      const uploadArea = document.querySelector(".upload-area");
+      const imageInput = document.getElementById("imageInput");
+
+      // Drag and Drop
+      uploadArea.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        uploadArea.style.backgroundColor = "#e8f4e8";
+      });
+
+      uploadArea.addEventListener("dragleave", () => {
+        uploadArea.style.backgroundColor = "transparent";
+      });
+
+      uploadArea.addEventListener("drop", (e) => {
+        e.preventDefault();
+        uploadArea.style.backgroundColor = "transparent";
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith("image/")) {
+          uploadImage(file);
+        } else {
+          alert("لطفاً یک فایل تصویری معتبر (JPG, PNG, GIF, WEBP) انتخاب کنید.");
+        }
+      });
+
+      // File input change
+      imageInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          uploadImage(file);
+        }
+      });
+
+      async function uploadImage(file) {
+        const formData = new FormData();
+        formData.append("image", file);
+
+        try {
+          console.log("Sending request to /api/search_image with file:", file.name);
+
+          // 🔹 درخواست اصلی برای جستجو (منتظر پاسخ)
+          const response = await fetch("http://localhost:8000/api/search_image", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            console.log("Response data:", data);
+
+            // 🔹 اول داده‌ها ذخیره شوند
+            sessionStorage.setItem("searchResults", JSON.stringify(data))
+
+            console.log("Saved to sessionStorage:", sessionStorage.getItem("searchResults"));
+
+
+            // 🔹 بعد ارسال تصویر برای ذخیره را آغاز کن ولی منتظرش نباش
+            sendToSaveEndpoint(file);
+
+            // 🔹 حالا با یک تاخیر کوچک برو به صفحه نتایج
+            setTimeout(() => {
+              window.location.href = "results.html";
+            }, 500);
+          } else {
+            const text = await response.text();
+            console.error("Server response:", text);
+            alert(`خطا در آپلود تصویر (${response.status})`);
+          }
+        } catch (error) {
+          console.error("Error uploading image:", error);
+          alert(`خطا در ارتباط با سرور: ${error.message}`);
+        }
+      }
+
+
+      // 🔸 تابع کمکی برای ارسال تصویر به /api/save_image بدون تأخیر
+      function sendToSaveEndpoint(file) {
+        const saveForm = new FormData();
+        saveForm.append("image", file);
+        fetch("http://localhost:8000/api/save_image", {
+          method: "POST",
+          body: saveForm,
+        })
+          .then((res) => res.json())
+          .then((data) => console.log("Save queued:", data))
+          .catch((err) => console.error("Save error:", err));
+      }
+    </script>
+
+  </body>
+</html>

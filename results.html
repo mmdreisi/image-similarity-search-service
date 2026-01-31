@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>نتایج جستجو</title>
+    <link rel="stylesheet" href="assets/css/style.css" />
+    <link rel="stylesheet" href="assets/font.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>نتایج جستجو</h1>
+      <div id="loading" class="loading">در حال بارگذاری...</div>
+      <div id="results" class="results-grid" style="display: none"></div>
+      <div id="no-results" style="display: none" class="no-results">
+        نتیجه‌ای پیدا نشد
+        <br />
+        <a href="/upload.html" class="back-btn">تصویر جدید آپلود کنید</a>
+      </div>
+      <a href="/upload.html" class="back-btn">بازگشت به آپلود</a>
+    </div>
+
+    <script>
+      function loadResults() {
+        document.getElementById("loading").style.display = "block";
+        document.getElementById("results").style.display = "none";
+        document.getElementById("no-results").style.display = "none";
+
+        try {
+          const data = JSON.parse(sessionStorage.getItem("searchResults"));
+          console.log("Loaded data:", sessionStorage.getItem("searchResults"));
+
+          document.getElementById("loading").style.display = "none";
+
+          if (data && data.results && data.results.length > 0) {
+            const resultsDiv = document.getElementById("results");
+            resultsDiv.style.display = "grid";
+            resultsDiv.innerHTML = "";
+
+            data.results.forEach((result) => {
+              const resultItem = document.createElement("div");
+              resultItem.className = "result-item";
+
+              resultItem.innerHTML = `
+              <div class="img-wrapper">
+                            <img src="${
+                              result.metadata.image_path ||
+                              "/static/placeholder.jpg"
+                            }" alt="Demo Image"/>
+                            </div>
+                             <p class="demo-name">${result.metadata.demo_name}</p>
+                            <p class="similarity s-hide">درصد شباهت: ${result.similarity_percentage.toFixed(
+                              2
+                            )}%</p>
+                            
+                            <p class="demo-Pname"> <a target="_blank" href="${
+                              result.metadata.template_url
+                            }" class="btn">محصول: ${
+                result.metadata.template_name
+              }</a></p>
+                  <p class="demo-link"> <a target="_blank" href="${
+                               result.metadata.demo_url
+                             }" class="btn">مشاهده پیش نمایش</a></p>
+                           
+                        `;
+              resultsDiv.appendChild(resultItem);
+            });
+          } else {
+            document.getElementById("no-results").style.display = "block";
+          }
+        } catch (error) {
+          console.error("Error loading results:", error);
+          document.getElementById("loading").style.display = "none";
+          document.getElementById("no-results").style.display = "block";
+        }
+      }
+
+      window.onload = loadResults;
+    </script>
+    <script>
+      // اسکرول دینامیک (اگر تصویر بزرگ‌تر از کادر باشه)
+      document.querySelectorAll(".result-item").forEach((item) => {
+        const img = item.querySelector("img");
+        item.addEventListener("mouseenter", () => {
+          const diff = img.scrollHeight - item.clientHeight;
+          if (diff > 0) {
+            img.style.transform = `translateY(-${diff}px)`;
+          }
+        });
+
+        item.addEventListener("mouseleave", () => {
+          img.style.transform = "translateY(0)";
+        });
+      });
+    </script>
+  </body>
+</html>

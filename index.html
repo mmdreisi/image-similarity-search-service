@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CheckThem | جستجوی شباهت قالب‌ها</title>
+
+    <!-- فونت فارسی رایگان -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --bg: #0f172a;
+        --bg-soft: #111827;
+        --txt: #e5e7eb;
+        --muted: #9ca3af;
+        --brand: #3b82f6;
+        --brand-2: #22d3ee;
+        --success: #10b981;
+        --danger: #ef4444;
+        --card-radius: 16px;
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+        --container: 1100px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: "Vazirmatn", system-ui, Segoe UI, Roboto, Arial, sans-serif;
+        background: radial-gradient(
+            1200px 500px at 80% -10%,
+            rgba(59, 130, 246, 0.15),
+            transparent 70%
+          ),
+          radial-gradient(
+            800px 400px at 10% -20%,
+            rgba(34, 211, 238, 0.12),
+            transparent 60%
+          ),
+          var(--bg);
+        color: var(--txt);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      header {
+        position: relative;
+        padding: 32px 16px 24px;
+        background: linear-gradient(
+          135deg,
+          rgba(59, 130, 246, 0.25),
+          rgba(34, 211, 238, 0.15)
+        );
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        overflow: hidden;
+      }
+      header .container {
+        max-width: var(--container);
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-decoration: none;
+        color: var(--txt);
+      }
+      .brand .logo {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: linear-gradient(180deg, var(--brand), var(--brand-2));
+        box-shadow: 0 12px 24px rgba(59, 130, 246, 0.35);
+      }
+      .brand .title {
+        font-weight: 700;
+        font-size: 20px;
+      }
+      nav {
+        margin-right: auto;
+        display: flex;
+        gap: 16px;
+      }
+      nav a {
+        color: var(--muted);
+        text-decoration: none;
+        font-weight: 600;
+      }
+      nav a:hover {
+        color: #fff;
+      }
+
+      .hero {
+        padding: 16px 0 10px;
+      }
+      .search-card {
+        max-width: var(--container);
+        margin: 18px auto 0;
+        background: rgba(17, 24, 39, 0.65);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        box-shadow: var(--shadow);
+        border-radius: 24px;
+        padding: 20px;
+        backdrop-filter: blur(8px);
+      }
+      .search-row {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .search-row input[type="url"] {
+        flex: 1;
+        min-width: 260px;
+        padding: 14px 16px;
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: #0b1220;
+        color: #fff;
+        outline: none;
+        font-size: 14px;
+      }
+      .search-row input[type="url"]::placeholder {
+        color: #7a8599;
+      }
+      .search-row button {
+        padding: 14px 20px;
+        border-radius: 14px;
+        border: 0;
+        cursor: pointer;
+        background: linear-gradient(135deg, var(--brand), var(--brand-2));
+        color: #061120;
+        font-weight: 800;
+        letter-spacing: 0.2px;
+        transition: transform 0.08s ease, filter 0.2s ease;
+      }
+      .search-row button:hover {
+        filter: brightness(1.08);
+      }
+      .search-row button:active {
+        transform: scale(0.98);
+      }
+
+      .status {
+        margin-top: 12px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .status.error {
+        color: var(--danger);
+      }
+      .status.success {
+        color: var(--success);
+      }
+
+      main {
+        flex: 1;
+        padding: 24px 16px;
+      }
+      .results {
+        max-width: var(--container);
+        margin: 0 auto;
+      }
+      .results-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+      }
+      .results-header h2 {
+        margin: 0;
+        font-size: 18px;
+      }
+      .badge {
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: var(--muted);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+      }
+      @media (max-width: 1024px) {
+        .grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+      @media (max-width: 640px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .card {
+        background: var(--bg-soft);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: var(--card-radius);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        display: flex;
+        flex-direction: column;
+        padding: 16px; /* افزایش padding برای جبران حذف تصویر */
+      }
+      .body {
+        padding: 12px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .title {
+        font-size: 15px;
+        font-weight: 700;
+        line-height: 1.5;
+      }
+      .meta {
+        font-size: 12px;
+        color: var(--muted);
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .actions {
+        padding: 12px 14px;
+        display: flex;
+        gap: 10px;
+        margin-top: auto;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        font-weight: 700;
+      }
+      .btn.primary {
+        color: #061120;
+        background: linear-gradient(135deg, var(--brand), var(--brand-2));
+        padding: 10px 12px;
+        border-radius: 12px;
+      }
+      .btn.ghost {
+        color: #c7d2fe;
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .skeleton {
+        position: relative;
+        overflow: hidden;
+        background: #0b1220;
+        border-radius: 12px;
+      }
+      .skeleton::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        translate: -100% 0;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.06),
+          transparent
+        );
+        animation: shimmer 1.2s infinite;
+      }
+      @keyframes shimmer {
+        to {
+          translate: 100% 0;
+        }
+      }
+
+      footer {
+        padding: 24px 16px;
+        color: var(--muted);
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="container">
+        <a class="brand" href="#" aria-label="CheckThem Home">
+          <span class="logo" aria-hidden="true"></span>
+          <span class="title">چِک‌تِم | یافتن قالب‌های مشابه</span>
+        </a>
+      </div>
+
+      <section class="hero">
+        <div class="search-card">
+          <div class="search-row">
+            <input
+              id="urlInput"
+              type="url"
+              placeholder="آدرس صفحه را وارد کنید… (مثلاً https://example.com)"
+              pattern="https?://.*"
+              required
+            />
+            <button id="searchBtn" type="button">جستجو</button>
+          </div>
+          <div id="status" class="status">
+            آدرس صفحه را وارد کنید و جستجو را بزنید.
+          </div>
+        </div>
+      </section>
+    </header>
+
+    <main>
+      <div class="results">
+        <div class="results-header">
+          <h2>نتایج مشابه</h2>
+          <span id="cachedBadge" class="badge" style="display: none"
+            >نتیجه کش‌شده</span
+          >
+        </div>
+        <div id="grid" class="grid"></div>
+      </div>
+    </main>
+
+    <footer>by mmdreisi</footer>
+
+    <script>
+      const API_BASE = "http://127.0.0.1:8000/api";
+      const urlInput = document.getElementById("urlInput");
+      const searchBtn = document.getElementById("searchBtn");
+      const statusEl = document.getElementById("status");
+      const cachedBadge = document.getElementById("cachedBadge");
+      const grid = document.getElementById("grid");
+
+      function renderSkeletonCards(count = 6) {
+        grid.innerHTML = "";
+        for (let i = 0; i < count; i++) {
+          const card = document.createElement("div");
+          card.className = "card";
+          card.innerHTML = `
+            <div class="body">
+              <div class="skeleton" style="height:16px;width:60%"></div>
+              <div class="skeleton" style="height:12px;width:40%;margin-top:8px"></div>
+              <div class="skeleton" style="height:12px;width:40%;margin-top:8px"></div>
+              <div class="skeleton" style="height:28px;width:30%;margin-top:16px"></div>
+            </div>
+          `;
+          grid.appendChild(card);
+        }
+      }
+
+      function renderCard(item) {
+        const card = document.createElement("div");
+        card.className = "card";
+
+        const body = document.createElement("div");
+        body.className = "body";
+
+        const title = document.createElement("div");
+        title.className = "title";
+        title.textContent = item.metadata.template_name || "قالب بدون‌نام";
+
+        const meta = document.createElement("div");
+        meta.className = "meta";
+        meta.innerHTML = `
+          <div><strong>لینک قالب:</strong> <a href="${item.metadata.template_url || '#'}" target="_blank" rel="noopener">${item.metadata.template_url || 'نامشخص'}</a></div>
+          <div><strong>لینک دمو:</strong> <a href="${item.metadata.demo_url || '#'}" target="_blank" rel="noopener">${item.metadata.demo_url || 'نامشخص'}</a></div>
+          <div><strong>نام دمو:</strong> ${item.metadata.demo_name || 'نامشخص'}</div>
+        `;
+
+        const actions = document.createElement("div");
+        actions.className = "actions";
+        if (item.metadata.demo_url) {
+          const aDemo = document.createElement("a");
+          aDemo.href = item.metadata.demo_url;
+          aDemo.target = "_blank";
+          aDemo.rel = "noopener";
+          aDemo.className = "btn primary";
+          aDemo.textContent = "مشاهده دمو";
+          actions.appendChild(aDemo);
+        }
+        const aMore = document.createElement("a");
+        aMore.href = item.metadata.template_url || "#";
+        aMore.target = "_blank";
+        aMore.rel = "noopener";
+        aMore.className = "btn ghost";
+        aMore.textContent = "جزئیات";
+        actions.appendChild(aMore);
+
+        body.appendChild(title);
+        body.appendChild(meta);
+        body.appendChild(actions);
+        card.appendChild(body);
+        return card;
+      }
+
+      function renderResults(payload) {
+        cachedBadge.style.display = payload.cached ? "inline-flex" : "none";
+        const items = Array.isArray(payload.results) ? payload.results : [];
+        grid.innerHTML = "";
+        if (items.length === 0) {
+          grid.innerHTML = '<div class="card" style="padding:20px;align-items:center;justify-content:center">نتیجه‌ای یافت نشد.</div>';
+          return;
+        }
+        items.forEach((item) => grid.appendChild(renderCard(item)));
+      }
+
+      async function onSearch() {
+        statusEl.className = "status";
+        cachedBadge.style.display = "none";
+        const url = (urlInput.value || "").trim();
+        if (!/^https?:\/\//i.test(url)) {
+          statusEl.textContent = "لطفاً یک آدرس معتبر با http/https وارد کنید.";
+          statusEl.classList.add("error");
+          return;
+        }
+
+        renderSkeletonCards(6);
+        statusEl.textContent = "در حال پردازش… ممکن است چند ثانیه طول بکشد.";
+
+        try {
+          const res = await fetch(
+            `${API_BASE}/search?url=${encodeURIComponent(url)}`
+          );
+          if (!res.ok) {
+            throw new Error(`پاسخ نامعتبر از سرور: ${res.status}`);
+          }
+          const payload = await res.json();
+          renderResults(payload);
+          statusEl.textContent = payload.cached
+            ? "نتیجه از کش خوانده شد."
+            : "نتایج جدید آماده شد.";
+          statusEl.classList.add("success");
+        } catch (err) {
+          console.error(err);
+          statusEl.textContent =
+            "خطا در برقراری ارتباط با سرور. لطفاً دوباره تلاش کنید.";
+          statusEl.classList.add("error");
+          grid.innerHTML = "";
+        }
+      }
+
+      searchBtn.addEventListener("click", onSearch);
+      urlInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          onSearch();
+        }
+      });
+    </script>
+  </body>
+</html>
